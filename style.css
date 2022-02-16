@@ -6,8 +6,6 @@
 
 body{
 
-    
-
 	width: calc(100vw -17px);
 	height: calc(100vh - 17px);
     font-family: 'Montserrat', sans-serif;
@@ -28,7 +26,7 @@ body{
 }
 
 #header{
-    width: 80%;
+    width: fit-content;
     height: 10%;
     display: flex;
     flex-direction: column;
@@ -263,19 +261,22 @@ footer input{
     width: 217px;
     height: 42px;
     border: 1px solid #CFCFCF;
+    border-radius: 5px;
     margin: 15px;
-    
+    padding-left: 10px;
 }
+
+footer input[type="text"]:focus{
+    border:  1px solid #FF6600;
+ }
 
 footer input::placeholder{
     color:#9E9E9E;
 }
 
-footer input:focus{
-   border:  1px solid #FF6600;
-}
 
-footer button{
+
+#buttonSend{
     width: 70px;
     height: 46px;
     background-image: linear-gradient(#EF6C00 ,#C0661C ) ;
@@ -284,6 +285,11 @@ footer button{
     color:#FFFFFF ;
     font-weight: bold;
     line-height: 14px;
+}
+
+#buttonSend:disabled{
+    background-image: none;
+    background-color: #DDDDDD;
 }
 
 
@@ -304,4 +310,33 @@ footer button{
 .errorColor{
     color: var(--error-color) !important;
     border-color: var(--error-color) !important;
+}
+
+@media(min-width: 366px) {
+
+    #container{
+        padding-top: 3%;
+        padding-bottom: 2%;
+    }
+
+    h1{
+        font-size: 36px;
+    }
+
+    #statusMessage{
+        top: -20px;
+    }
+
+    #NumberContent{
+        transform:scale(0.8);
+        -ms-transform:scale(0.8); 
+        -moz-transform:scale(0.8); 
+        -webkit-transform:scale(0.8); 
+        -o-transform:scale(0.8)
+    }
+
+    input:focus{
+        outline: 1px solid #FF6600;
+    }
+
 }
