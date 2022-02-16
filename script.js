@@ -19,6 +19,7 @@ const ledMap = {
     9: [1, 2, 3, 4, 6, 7, 8]
 }
 
+
 //Variaveis
 let number = 0
 let userLastGuess
@@ -74,14 +75,37 @@ const removeDisplay = (displayNumber) => {
 
 const ResetGame = () => {
     getRandomNumber()
-    writeText(getComponentByID('statusMessage'), '')
+    const StatusMessage = getComponentByID('statusMessage')
+    writeText(StatusMessage, '')
+    removeClass('winnerColor', StatusMessage)
+    removeClass('errorColor', StatusMessage)
+
+    ManageLed('0')
     changeClass('visible', 'hidden', getComponentByID('ButtonReset'))
+}
+
+const ManageLed = (number, status) => {
+    const string = number.toString()
+
+    changeClass('visible', 'hidden', getComponentByID('display-1'))
+    changeClass('visible', 'hidden', getComponentByID('display-2'))
+    changeClass('visible', 'hidden', getComponentByID('display-3'))
+
+    for (let i = 0; i < string.length; i++) {
+        resetLed(i + 1)
+        showNumberOnLed(parseInt(string[i]), i + 1, status)
+        changeClass('hidden', 'visible', getComponentByID(`display-${i + 1}`))
+    }
+
 }
 
 const victoryCondition = () => {
     if (number === userLastGuess) {
-        writeText(getComponentByID('statusMessage'), statusMessage.acertou)
+        const StatusMessage = getComponentByID('statusMessage')
+        writeText(StatusMessage, statusMessage.acertou)
+        addClass('winnerColor', StatusMessage)
         changeClass('hidden', 'visible', getComponentByID('ButtonReset'))
+        return 'winner'
     }
     if (number > userLastGuess) {
         writeText(getComponentByID('statusMessage'), statusMessage.maior)
@@ -93,6 +117,7 @@ const victoryCondition = () => {
 
 
 
+
 const handleClick = () => {
 
     const numberReceived = parseInt(getComponentByID('userInput').value)
@@ -100,23 +125,33 @@ const handleClick = () => {
     if (typeof numberReceived === 'number' && numberReceived >= 0 && numberReceived < 1000) {
         userLastGuess = numberReceived
         getComponentByID('userInput').value = ''
-        victoryCondition()
+        const status = victoryCondition()
+        ManageLed(numberReceived, status)
+
     }
 }
 
 const resetLed = (displayNumber) => {
     for (let i = 1; i <= 8; i++) {
         const segment = getComponentByClassName(`segment-${i}`)[displayNumber - 1]
+        removeClass(`winnerColor-${i}`, segment)
+        removeClass(`errorColor-${i}`, segment)
         segment.style.opacity = 0.1
     }
 }
 
-const showNumberOnLed = (number, displayNumber) => {
-    ledMap[number].forEach(i => {
-
-
-        const segment = getComponentByClassName(`segment-${i}`)[displayNumber - 1]
+const showNumberOnLed = (number, displayNumber, status) => {
+    ledMap[number].forEach((n) => {
+        console.log(status)
+        const segment = getComponentByClassName(`segment-${n}`)[displayNumber - 1]
         segment.style.opacity = 1
+
+        if (status === 'winner') addClass(`winnerColor-${n}`, segment)
+        if (status === 'error') addClass(`errorColor-${n}`, segment)
+        if (!status) {
+            removeClass(`winner-${n}`, segment)
+            removeClass(`error-${n}`, segment)
+        }
     })
 
 }
@@ -130,68 +165,10 @@ const getRandomNumber = async () => {
         number = json.value
     } else {
         number = response.status
+        ManageLed(number, 'error')
         writeText(getComponentByID('statusMessage'), statusMessage.erro)
         changeClass('hidden', 'visible', getComponentByID('ButtonReset'))
     }
-}
-
-
-
-const createPageLayout = () => {
-
-    //atribui a uma variavel a tag Body
-    const Body = getComponentByID('Body')
-
-    const Container = createTag('div')
-    setID('container', Container)
-    appendElement(Body, Container)
-    //cria uma tag Header e atribui como filho de Body
-    const Header = createTag('header')
-    appendElement(Container, Header)
-
-    //cria uma tag Title, escreve seu conteúdo e atribui como filho do Body
-    const Title = createTag('h1')
-    writeText(Title, 'QUAL É O NÚMERO?')
-    appendElement(Header, Title)
-
-    const Content = createTag('div')
-    setID('content', Content)
-    appendElement(Container, Content)
-
-    const statusMessage = createTag('span')
-    setID('statusMessage', statusMessage)
-    appendElement(Content, statusMessage)
-
-    //cria uma tag NumberContent, seta um ID e atribui como filho do Body
-    const NumberContent = createTag('div')
-    setID('NumberContent', NumberContent)
-    appendElement(Content, NumberContent)
-
-    const ButtonReset = createTag('button')
-    setID('ButtonReset', ButtonReset)
-    addClass('hidden', ButtonReset)
-    writeText(ButtonReset, 'NOVA PARTIDA')
-    setAttribute(ButtonReset, 'onClick', 'ResetGame()')
-    appendElement(Content, ButtonReset)
-
-    //cria uma tag Footer e atribui como filho do Body
-    const Footer = createTag('footer')
-    appendElement(Container, Footer)
-
-
-
-    //cria uma tag Input seta type como text, placeholder e atribui como filho do Body
-    const Input = createTag('input')
-    setID('userInput', Input)
-    setAttribute(Input, 'type', 'text')
-    setAttribute(Input, 'placeholder', 'Digite o palpite')
-    appendElement(Footer, Input)
-
-
-    const ButtonSend = createTag('button')
-    writeText(ButtonSend, 'ENVIAR')
-    setAttribute(ButtonSend, 'onClick', 'handleClick()')
-    appendElement(Footer, ButtonSend)
 }
 
 
@@ -219,21 +196,97 @@ const createDisplay = (displayNumber) => {
     }
     return display
 }
+const createPageLayout = () => {
+
+    //atribui a uma variavel a tag Body
+    const Body = getComponentByID('Body')
+
+    const Container = createTag('div')
+    setID('container', Container)
+    appendElement(Body, Container)
+    //cria uma tag Header e atribui como filho de Body
+    const Header = createTag('header')
+    setID('header', Header)
+    appendElement(Container, Header)
+
+    //cria uma tag Title, escreve seu conteúdo e atribui como filho do Body
+    const Title = createTag('h1')
+    writeText(Title, 'QUAL É O NÚMERO?')
+    appendElement(Header, Title)
+
+    const Underline = createTag('div')
+    addClass('underline', Underline)
+    appendElement(Header, Underline)
+
+    const Content = createTag('div')
+    setID('content', Content)
+    appendElement(Container, Content)
+
+    const statusMessage = createTag('span')
+    setID('statusMessage', statusMessage)
+    appendElement(Content, statusMessage)
+
+    //cria uma tag NumberContent, seta um ID e atribui como filho do Body
+    const NumberContent = createTag('div')
+    setID('NumberContent', NumberContent)
+    appendElement(Content, NumberContent)
+
+    for (let i = 1; i <= 3; i++) {
+
+        const display = createDisplay(i)
+        appendElement(NumberContent, display)
+        resetLed(i)
+        showNumberOnLed(0, i)
+
+    }
+
+    changeClass('visible', 'hidden', getComponentByID('display-2'))
+    changeClass('visible', 'hidden', getComponentByID('display-3'))
+
+    const ButtonReset = createTag('button')
+    setID('ButtonReset', ButtonReset)
+    addClass('hidden', ButtonReset)
+    setAttribute(ButtonReset, 'onClick', 'ResetGame()')
+    appendElement(Content, ButtonReset)
+
+    const RefreshIcon = createTag('img')
+    setAttribute(RefreshIcon, 'src', './assets/refresh-icon.svg')
+    appendElement(ButtonReset, RefreshIcon)
+
+    const ButtonText = createTag('span')
+    addClass('button-new-run', ButtonText)
+    writeText(ButtonText, 'NOVA PARTIDA')
+    appendElement(ButtonReset, ButtonText)
+
+
+
+
+    //cria uma tag Footer e atribui como filho do Body
+    const Footer = createTag('footer')
+    appendElement(Container, Footer)
+
+
+
+    //cria uma tag Input seta type como text, placeholder e atribui como filho do Body
+    const Input = createTag('input')
+    setID('userInput', Input)
+    setAttribute(Input, 'type', 'text')
+    setAttribute(Input, 'placeholder', 'Digite o palpite')
+    appendElement(Footer, Input)
+
+
+    const ButtonSend = createTag('button')
+    writeText(ButtonSend, 'ENVIAR')
+    setAttribute(ButtonSend, 'onClick', 'handleClick()')
+    appendElement(Footer, ButtonSend)
+}
+
 
 const StartGame = async () => {
     createPageLayout()
     await getRandomNumber()
+
     console.log(number)
-
-
-    document.getElementById('NumberContent').appendChild(createDisplay(1))
-    document.getElementById('NumberContent').appendChild(createDisplay(2))
-    document.getElementById('NumberContent').appendChild(createDisplay(3))
-
-
-    resetLed(1)
-    showNumberOnLed(0, 1)
-
 }
 
 StartGame()
