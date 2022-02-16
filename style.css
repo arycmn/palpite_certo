@@ -312,7 +312,7 @@ footer input::placeholder{
     border-color: var(--error-color) !important;
 }
 
-@media(min-width: 366px) {
+@media(min-width: 394px) {
 
     #container{
         padding-top: 3%;
@@ -339,4 +339,10 @@ footer input::placeholder{
         outline: 1px solid #FF6600;
     }
 
+}
+
+@media (max-width: 280px) {
+    h1{
+        font-size: 23px;
+    }
 }

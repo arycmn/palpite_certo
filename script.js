@@ -2,11 +2,12 @@
 
 //essa constante representa cada tipo de mensagem exibida ao usuário ao submeter um valor
 const statusMessage = {
-    erro: 'Erro',
-    menor: 'É menor',
-    maior: 'É maior',
-    acertou: 'Você acertou!!!!'
+    error: 'Erro',
+    smaller: 'É menor',
+    larger: 'É maior',
+    win: 'Você acertou!!!!'
 }
+
 
 //essa constante mapeia quais leds precisam ser acesos para representar cada número
 const ledMap = {
@@ -130,7 +131,6 @@ const ManageLed = (number, status) => {
 
     for (let i = 0; i < string.length; i++) {
         resetLed(i + 1)
-        console.log(string[i])
         showNumberOnLed(parseInt(string[i]), i + 1, status)
         changeClass('hidden', 'visible', getComponentByID(`display-${i + 1}`))
     }
@@ -150,7 +150,6 @@ const resetLed = (displayNumber) => {
 //acende os leds de cada display para representar uma numeração, podendo alterar as cores de acordo com o status
 const showNumberOnLed = (number, displayNumber, status) => {
     ledMap[number].forEach((n) => {
-        console.log(number, n)
         const segment = getComponentByClassName(`segment-${n}`)[displayNumber - 1]
         segment.style.opacity = 1
 
@@ -249,18 +248,24 @@ const createPageLayout = () => {
 const getRandomNumber = async () => {
     const response = await fetch('https://us-central1-ss-devops.cloudfunctions.net/rand?min=1&max=300')
 
-    if (response.ok) {
-        let json = await response.json()
+    if (!response.ok) {
 
-        number = json.value
-    } else {
         number = response.status
         ManageLed(number, 'error')
-        writeText(getComponentByID('statusMessage'), statusMessage.erro)
+        writeText(getComponentByID('statusMessage'), statusMessage.error)
         changeClass('hidden', 'visible', getComponentByID('ButtonReset'))
+
+        return
     }
 
-    //esse console.log() foi deixado de proposito para facilitar o número sorteado pela API
+    let json = await response.json()
+
+    number = json.value
+
+
+
+
+    //esse console.log() foi deixado de propósito para facilitar encontrar o número sorteado pela API
     console.log('Número sorteado:', number)
 }
 
@@ -268,16 +273,16 @@ const getRandomNumber = async () => {
 const victoryCondition = () => {
     if (number === userLastGuess) {
         const StatusMessage = getComponentByID('statusMessage')
-        writeText(StatusMessage, statusMessage.acertou)
+        writeText(StatusMessage, statusMessage.win)
         addClass('winnerColor', StatusMessage)
         changeClass('hidden', 'visible', getComponentByID('ButtonReset'))
         return 'winner'
     }
     if (number > userLastGuess) {
-        writeText(getComponentByID('statusMessage'), statusMessage.maior)
+        writeText(getComponentByID('statusMessage'), statusMessage.larger)
     }
     if (number < userLastGuess) {
-        writeText(getComponentByID('statusMessage'), statusMessage.menor)
+        writeText(getComponentByID('statusMessage'), statusMessage.smaller)
     }
 }
 
@@ -299,9 +304,11 @@ const validateInput = () => {
 
     if (/^[0-9]{1,3}$/.test(getComponentByID('userInput').value)) {
         removeAttribute(getComponentByID('buttonSend'), 'disabled')
-    } else {
-        setAttribute(getComponentByID('buttonSend'), 'disabled')
+        return
     }
+
+
+    setAttribute(getComponentByID('buttonSend'), 'disabled')
 
 }
 
@@ -324,12 +331,4 @@ const StartGame = async () => {
 
 }
 
-
-
-
 StartGame()
-
-
-
-
-
